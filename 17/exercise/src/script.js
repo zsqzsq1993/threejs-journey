@@ -32,22 +32,28 @@ const texture = textureLoader.load('/textures/particles/2.png')
 /**
  * Customer particles - Galaxy
  */
-const count = 5000
+const count = 20000
 const particlesGeometry = new THREE.BufferGeometry()
 const positions = new Float32Array(3 * count)
+const colors = new Float32Array(3 * count)
 Array(3 * count).keys().forEach((_, index) => {
-  positions[index] = (Math.random() - 0.5) * 20
+  positions[index] = (Math.random() - 0.5) * 10
+  colors[index] = Math.random()
 })
 particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
 const particles = new THREE.Points(
   particlesGeometry,
   new THREE.PointsMaterial({
     size: 0.1,
     sizeAttenuation: true,
-    color: '#ff88cc',
+    // color: '#ff88cc',
     alphaMap: texture,
-    alphaTest: 0.001,
-    transparent: true
+    // alphaTest: 0.001,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexColors: true
   })
 )
 scene.add(particles)
@@ -80,7 +86,7 @@ window.addEventListener('resize', () =>
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.z = 3
+camera.position.z = 2
 scene.add(camera)
 
 // Controls
@@ -104,6 +110,15 @@ const clock = new THREE.Clock()
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
+
+    // Update particles
+    // particles.rotation.y = elapsedTime * 0.2
+    Array(count).keys().forEach((_, index) => {
+      const i3 = index * 3
+      const x = particlesGeometry.attributes.position.array[i3]
+      particlesGeometry.attributes.position.array[i3 + 1] = Math.sin(elapsedTime + x)
+    })
+    particlesGeometry.attributes.position.needsUpdate = true
 
     // Update controls
     controls.update()
